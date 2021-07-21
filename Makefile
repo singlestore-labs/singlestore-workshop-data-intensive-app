@@ -1,5 +1,9 @@
 .PHONY: all
-all: down monitoring storage simulator
+all: down monitoring storage simulator status
+
+.PHONY: status
+status:
+	docker-compose ps
 
 .PHONY: logs
 logs:
