@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run simulator",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/src/bin/simulator",
+            "args": [
+                "--config",
+                "${workspaceFolder}/src/config-sim.toml",
+            ]
+        },
+    ]
+}

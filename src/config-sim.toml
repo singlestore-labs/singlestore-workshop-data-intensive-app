@@ -1,0 +1,4 @@
+numworkers = 2
+
+[producer]
+brokers = [ "redpanda:9092" ]
