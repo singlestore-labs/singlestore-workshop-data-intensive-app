@@ -10,7 +10,7 @@
             "driver": "MariaDB",
             "name": "SingleStore",
             "username": "root",
-            "database": "information_schema",
+            "database": "app",
             "password": "root"
         }
     ]

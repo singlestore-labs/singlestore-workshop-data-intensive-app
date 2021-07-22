@@ -12,5 +12,16 @@
                 "${workspaceFolder}/src/config-sim.toml",
             ]
         },
+        {
+            "name": "Run api",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/src/bin/api",
+            "args": [
+                "--config",
+                "${workspaceFolder}/src/config-api.toml",
+            ]
+        },
     ]
 }

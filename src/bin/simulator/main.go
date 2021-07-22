@@ -35,13 +35,10 @@ func main() {
 		config = conf
 	}
 
-	// if your simulator needs to query SingleStore, connect to it here
-	/*
-		db, err := src.NewSingleStore(config.SingleStore)
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
+	sitemap, err := src.LoadSitemap(config.SitemapURL)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	simulators := make([]*src.Simulator, 0)
 	stopAll := func() {
@@ -70,7 +67,7 @@ func main() {
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 
-		simulator, err := src.NewSimulator(fmt.Sprintf("sim-%d", i), config)
+		simulator, err := src.NewSimulator(fmt.Sprintf("sim-%d", i), config, sitemap)
 		if err != nil {
 			log.Fatal(err)
 		}

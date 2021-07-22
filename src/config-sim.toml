@@ -1,4 +1,7 @@
-numworkers = 2
+numWorkers = 1
+maxUsersPerTick = 100
+
+sitemapURL = "https://www.singlestore.com/sitemap.xml"
 
 [producer]
-brokers = [ "redpanda:9092" ]
+brokers = [ "redpanda:9092", "localhost:9093" ]

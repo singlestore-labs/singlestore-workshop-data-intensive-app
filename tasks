@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+
+#####################################################################
+# This file contains several functions that represent tasks
+#
+# Run ./tasks help for a list of available tasks
+#
+#####################################################################
+
+# Enable shell strict mode
+set -euo pipefail
+
+help() {
+    cat <<EOF
+Usage: ./tasks <task> [<args>]
+
+tasks:
+    up:                     (re)start all containers
+    down:                   stop all containers
+    status:                 show status of containers
+    logs [SERVICE]:         show logs of a service
+    rpk:                    run a Redpanda command (run ./tasks rpk for help)
+    monitoring:             (re)start prometheus and grafana
+    storage:                (re)start singlestore and redpanda
+    simulator:              (re)start simulator
+    stop-simulator:         stop simulator
+    data:                   download data required for the workshop
+EOF
+}
+
+status() {
+    docker-compose ps
+}
+
+logs() {
+    local service=${1:-}
+    docker-compose logs --tail 100 -f ${service}
+}
+
+rpk() {
+    docker exec -it -e REDPANDA_BROKERS=redpanda:9092 redpanda rpk "${@}"
+}
+
+monitoring() {
+    docker-compose rm -fsv prometheus grafana
+    docker-compose up -d prometheus grafana
+}
+
+storage() {
+    docker-compose rm -fsv singlestore redpanda
+    docker-compose up -d singlestore redpanda
+}
+
+simulator() {
+    docker-compose rm -fsv simulator
+    docker-compose up --build -d simulator
+}
+
+stop-simulator() {
+    docker-compose rm -fsv simulator
+}
+
+api() {
+    docker-compose rm -fsv api
+    docker-compose up --build -d api
+}
+
+stop-api() {
+    docker-compose rm -fsv api
+}
+
+down() {
+    docker-compose down -v
+}
+
+up() {
+    down
+    monitoring
+    storage
+    simulator
+    api
+    status
+}
+
+data() {
+    mkdir -p data/tripdata
+    pushd data/tripdata >/dev/null
+    wget -N "https://nyc-tlc.s3.amazonaws.com/trip+data/fhv_tripdata_2019-12.csv"
+    wget -N "https://nyc-tlc.s3.amazonaws.com/misc/taxi+_zone_lookup.csv"
+    popd >/dev/null
+}
+
+type ${1:-help} >/dev/null 2>&1 || {
+    echo "Unknown command: ${1:-help}"
+    echo
+    help
+    exit 1
+}
+
+"${@:-help}"

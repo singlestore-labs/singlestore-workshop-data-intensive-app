@@ -12,8 +12,12 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
+type TopicEncoder interface {
+	Encode(v interface{}) error
+}
+
 type Producer interface {
-	TopicEncoder(topic string) *json.Encoder
+	TopicEncoder(topic string) TopicEncoder
 	Close() error
 }
 
@@ -43,8 +47,8 @@ func NewFranzProducer(config ProducerConfig) (Producer, error) {
 	}, nil
 }
 
-func (p *FranzProducer) TopicEncoder(topic string) *json.Encoder {
-	return json.NewEncoder(&FranzWriter{p: p, topic: topic})
+func (p *FranzProducer) TopicEncoder(topic string) TopicEncoder {
+	return &FranzWriter{p: p, topic: topic}
 }
 
 func (p *FranzProducer) Closed() bool {
@@ -56,17 +60,29 @@ func (p *FranzProducer) Close() error {
 		return errors.New("already closed")
 	}
 	atomic.StoreInt32(&p.closed, 1)
-
 	p.pendingWrites.Wait()
-
 	p.client.Close()
-
 	return nil
 }
 
 type FranzWriter struct {
 	p     *FranzProducer
 	topic string
+}
+
+func (w *FranzWriter) Encode(i interface{}) error {
+	out, err := json.Marshal(i)
+	if err != nil {
+		return err
+	}
+	n, err := w.Write(out)
+	if err != nil {
+		return err
+	}
+	if n != len(out) {
+		return errors.New("short write")
+	}
+	return nil
 }
 
 func (w *FranzWriter) Write(d []byte) (int, error) {

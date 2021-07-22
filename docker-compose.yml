@@ -20,7 +20,7 @@ services:
         volumes:
             - /var/lib/redpanda/data
     singlestore:
-        image: singlestore/cluster-in-a-box:centos-7.3.12-2d93725f98-3.2.11-1.11.7
+        image: singlestore/cluster-in-a-box:centos-7.5.6-9e799dbf4f-3.2.11-1.11.9
         container_name: singlestore
         volumes:
             - /var/lib/memsql
@@ -33,10 +33,6 @@ services:
             - ROOT_PASSWORD=root
             - LICENSE_KEY=${SINGLESTORE_LICENSE}
             - START_AFTER_INIT=Y
-    simulator:
-        build: src
-        image: singlestore-simulator
-        container_name: simulator
     prometheus:
         image: prom/prometheus:v2.28.1
         container_name: prometheus
@@ -59,3 +55,17 @@ services:
             - ./data/metrics/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/all.yaml:ro
         ports:
             - 3000:3000
+    simulator:
+        build:
+            context: src
+            target: simulator
+        image: singlestore-simulator:simulator
+        container_name: simulator
+    api:
+        build:
+            context: src
+            target: api
+        image: singlestore-simulator:api
+        container_name: api
+        ports:
+            - 8000:8000
