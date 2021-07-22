@@ -6,8 +6,8 @@ relational database built for data-intensive workloads. Redpanda is a Kafka API
 compatible streaming platform for mission-critical workloads created by the team
 at Vectorized.
 
-The rest of this readme will walk you through building a simple
-data-intensive application starting from the code here. If you follow this workshop, you will
+The rest of this readme will walk you through building a simple data-intensive
+application starting from the code here. If you follow this workshop, you will
 accomplish the following tasks:
 
 1. Prepare your environment
@@ -56,9 +56,9 @@ setup and ready to go.
    [SingleStore portal][singlestore-portal] and set it as an environment
    variable.
 
-    ```bash
-    export SINGLESTORE_LICENSE="<<singlestore license>>"
-    ```
+   ```bash
+   export SINGLESTORE_LICENSE="<<singlestore license>>"
+   ```
 
 ### Test that your environment is working
 
@@ -120,8 +120,8 @@ MySQL [(none)]> select "hello world";
 1 row in set (0.001 sec)
 ```
 
-To make sure that Redpanda is receiving data lets tail a test topic and
-see what the hello simulator is saying:
+To make sure that Redpanda is receiving data lets tail a test topic and see what
+the hello simulator is saying:
 
 ```bash
 $ ./tasks rpk topic consume --offset latest test
@@ -222,8 +222,9 @@ events := s.producer.TopicEncoder("events")
 
 ### Creating users
 
-Now it's time to start working in the main loop of the `Run()` method. Each time the
-simulator ticks (once per second) we will create a random number of new users.
+Now it's time to start working in the main loop of the `Run()` method. Each time
+the simulator ticks (once per second) we will create a random number of new
+users.
 
 I have already provided a variable in `s.config` called `MaxUsersPerTick` which
 we can use to play with later on. For now, write some code that looks a bit like
@@ -404,7 +405,8 @@ can read more about the powerful `CREATE PIPELINE` command
 ## 4. Expose business logic via an HTTP API
 
 Now that we have successfully generated and loaded data into SingleStore, we can
-easily expose that data via a simple HTTP API. We will be working in [api.go](src/api.go) for most of this section.
+easily expose that data via a simple HTTP API. We will be working in
+[api.go](src/api.go) for most of this section.
 
 The first query I suggest writing is a simple leaderboard. It looks something
 like this:
