@@ -404,7 +404,7 @@ can read more about the powerful `CREATE PIPELINE` command
 ## 4. Expose business logic via an HTTP API
 
 Now that we have successfully generated and loaded data into SingleStore, we can
-easily expose that data via a simple HTTP API. Open up [api.go](src/api.go) and define some interesting queries.
+easily expose that data via a simple HTTP API. We will be working in [api.go](src/api.go) for most of this section.
 
 The first query I suggest writing is a simple leaderboard. It looks something
 like this:
@@ -493,7 +493,7 @@ Before moving forward consider creating one or two additional endpoints or
 modifying the leaderboard. Here are some ideas:
 
 - (_easy_): change the leaderboard to accept a filter for a specific path
-  prefix; i.e. `-/leaderboard?prefix=/blog`
+  prefix; i.e. `/leaderboard?prefix=/blog`
 - (_medium_): add a new endpoint which returns a referrer leaderboard (you only
   care about rows where referrer is `NOT NULL`)
 - (_hard_): add a new endpoint which returns the number of page loads over time
