@@ -1,7 +1,7 @@
 version: '3.8'
 services:
     redpanda:
-        image: vectorized/redpanda:v21.7.4
+        image: vectorized/redpanda:v21.7.1
         container_name: redpanda
         entrypoint: /bin/bash -c
         command:
