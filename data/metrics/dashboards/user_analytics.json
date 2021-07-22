@@ -15,7 +15,6 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
   "links": [],
   "panels": [
     {
@@ -223,7 +222,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 19,
         "w": 24,
         "x": 0,
         "y": 8
@@ -239,7 +238,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT path, COUNT(DISTINCT user_id) AS count_unique\nFROM events\nWHERE $__timeFilter(ts)\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10",
+          "rawSql": "SELECT path, COUNT(distinct user_id) AS \"unique users\", max(page_time_s) as \"max time on page\"\nFROM events\nWHERE ts BETWEEN FROM_UNIXTIME(1626970859) AND FROM_UNIXTIME(1626971159)\nGROUP BY 1\nORDER BY 2 DESC, 3 DESC\nLIMIT 15;",
           "refId": "A",
           "select": [
             [
@@ -261,7 +260,7 @@
           ]
         }
       ],
-      "title": "Unique Leaderboard",
+      "title": "Top 15 Leaderboard",
       "type": "table"
     }
   ],
@@ -280,5 +279,5 @@
   "timezone": "",
   "title": "User Analytics",
   "uid": "_TsB4vZ7k",
-  "version": 1
+  "version": 2
 }

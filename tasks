@@ -48,7 +48,13 @@ monitoring() {
 
 storage() {
     docker-compose rm -fsv singlestore redpanda
-    docker-compose up -d singlestore redpanda
+
+    docker-compose up -d redpanda
+    sleep 1
+    rpk topic create test --partitions 8
+    rpk topic create events --partitions 8
+
+    docker-compose up -d singlestore
 }
 
 simulator() {

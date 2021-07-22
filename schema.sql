@@ -4,8 +4,8 @@ USE app;
 
 CREATE TABLE events (
     ts DATETIME NOT NULL,
-    path TEXT NOT NULL,
-    user_id TEXT NOT NULL,
+    path TEXT NOT NULL COLLATE "utf8_bin",
+    user_id TEXT NOT NULL COLLATE "utf8_bin",
 
     referrer TEXT,
     page_time_s DOUBLE NOT NULL DEFAULT 0,
@@ -13,6 +13,7 @@ CREATE TABLE events (
     SORT KEY (ts),
     SHARD KEY (user_id),
 
+    KEY (path),
     KEY (user_id),
     KEY (referrer)
 );

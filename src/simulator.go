@@ -97,15 +97,15 @@ func (s *Simulator) Run() error {
 			// users only consider leaving a page after at least 5 seconds
 			if pageTime > time.Second*5 {
 				eventProb := math.Pow(rand.Float64(), 2)
-				if eventProb > 0.9 {
+				if eventProb > 0.98 {
 					// user has left the site
 					users.Remove(el)
 					continue
-				} else if eventProb > 0.8 {
+				} else if eventProb > 0.9 {
 					// user jumps to a random page
 					user.CurrentPage = s.sitemap.RandomLeaf()
 					user.LastChange = time.Now()
-				} else if eventProb > 0.5 {
+				} else if eventProb > 0.8 {
 					// user goes to the "next" page
 					user.CurrentPage = user.CurrentPage.RandomNext()
 					user.LastChange = time.Now()

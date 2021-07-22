@@ -1,5 +1,5 @@
-numWorkers = 1
-maxUsersPerTick = 100
+numWorkers = 4
+maxUsersPerTick = 1000
 
 sitemapURL = "https://www.singlestore.com/sitemap.xml"
 
