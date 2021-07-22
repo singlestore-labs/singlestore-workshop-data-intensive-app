@@ -6,8 +6,8 @@ relational database built for data-intensive workloads. Redpanda is a Kafka API
 compatible streaming platform for mission-critical workloads created by the team
 at Vectorized.
 
-Optionally, the rest of this readme will walk you through building a simple
-application starting from the code here. If you follow the readme, you will
+The rest of this readme will walk you through building a simple
+data-intensive application starting from the code here. If you follow this workshop, you will
 accomplish the following tasks:
 
 1. Prepare your environment
@@ -16,12 +16,13 @@ accomplish the following tasks:
 4. Expose business logic via an HTTP API
 5. Visualize your data
 
-# 1. Prepare your environment
+## 1. Prepare your environment
 
 Before we can start writing code, we need to make sure that your environment is
 setup and ready to go.
 
 1. Make sure you clone this git repository to your machine
+
    ```bash
    git clone https://github.com/singlestore-labs/singlestore-workshop-data-intensive-app.git
    ```
@@ -55,11 +56,11 @@ setup and ready to go.
    [SingleStore portal][singlestore-portal] and set it as an environment
    variable.
 
-```bash
-export SINGLESTORE_LICENSE="<<singlestore license>>"
-```
+    ```bash
+    export SINGLESTORE_LICENSE="<<singlestore license>>"
+    ```
 
-## Test that your environment is working
+### Test that your environment is working
 
 > ℹ️ **Note:** This repository uses a bash script `./tasks` to run common tasks.
 > If you run the script with no arguments it will print out some information
@@ -72,12 +73,12 @@ as expected.
 ```bash
 $ ./tasks up
 (... lots of docker output here ...)
-   Name                  Command               State                                                                     Ports                                                                   
+   Name                  Command               State                                                                     Ports
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-grafana       /run.sh                          Up      0.0.0.0:3000->3000/tcp,:::3000->3000/tcp                                                                                                  
-prometheus    /bin/prometheus --config.f ...   Up      0.0.0.0:9090->9090/tcp,:::9090->9090/tcp                                                                                                  
+grafana       /run.sh                          Up      0.0.0.0:3000->3000/tcp,:::3000->3000/tcp
+prometheus    /bin/prometheus --config.f ...   Up      0.0.0.0:9090->9090/tcp,:::9090->9090/tcp
 redpanda      /bin/bash -c rpk config se ...   Up      0.0.0.0:29092->29092/tcp,:::29092->29092/tcp, 0.0.0.0:9092->9092/tcp,:::9092->9092/tcp, 0.0.0.0:9093->9093/tcp,:::9093->9093/tcp, 9644/tcp
-simulator     ./simulator --config confi ...   Up                                                                                                                                                
+simulator     ./simulator --config confi ...   Up
 singlestore   /startup                         Up      0.0.0.0:3306->3306/tcp,:::3306->3306/tcp, 3307/tcp, 0.0.0.0:8080->8080/tcp,:::8080->8080/tcp
 ```
 
@@ -119,7 +120,7 @@ MySQL [(none)]> select "hello world";
 1 row in set (0.001 sec)
 ```
 
-Finally, to make sure that Redpanda is receiving data lets tail a test topic and
+To make sure that Redpanda is receiving data lets tail a test topic and
 see what the hello simulator is saying:
 
 ```bash
@@ -138,7 +139,7 @@ $ ./tasks rpk topic consume --offset latest test
 }
 ```
 
-# 2. Write a digital-twin
+## 2. Write a digital-twin
 
 Now that we have our environment setup it's time to start writing some code. Our
 first task is to build a digital-twin, which is basically a data simulator. We
@@ -169,7 +170,7 @@ SingleStore website. Lets define it's behavior:
 > probably did that on purpose to keep the tutorial running smoothly. Please
 > take a look through some of the provided helpers if you want to learn more!
 
-## Define our data structures
+### Define our data structures
 
 First, we need to define an object to track our "users". I suggest doing this in
 [simulator.go](src/simulator.go), but any go file in that directory (or a new go
@@ -177,9 +178,9 @@ file) will work fine.
 
 ```golang
 type User struct {
-	UserID      string
-	CurrentPage *Page
-	LastChange  time.Time
+  UserID      string
+  CurrentPage *Page
+  LastChange  time.Time
 }
 ```
 
@@ -188,11 +189,11 @@ topic in Redpanda.
 
 ```golang
 type Event struct {
-	Timestamp int64   `json:"unix_timestamp"`
-	PageTime  float64 `json:"page_time_seconds,omitempty"`
-	Referrer  string  `json:"referrer,omitempty"`
-	UserID    string  `json:"user_id"`
-	Path      string  `json:"path"`
+  Timestamp int64   `json:"unix_timestamp"`
+  PageTime  float64 `json:"page_time_seconds,omitempty"`
+  Referrer  string  `json:"referrer,omitempty"`
+  UserID    string  `json:"user_id"`
+  Path      string  `json:"path"`
 }
 ```
 
@@ -200,15 +201,15 @@ As you can tell from the code, most of the boilerplate has already been written
 for you. We mainly need to fill in the body of the `Simulator.Run` method. Lets
 do that now.
 
-## Datastructures
+### Data Structures
 
 First we need a place to store our users. Lets do that at the start of the
-`Run()` method. We will use a linked list datastructure since we will be adding
+`Run()` method. We will use a linked list data structure since we will be adding
 and removing users often.
 
 ```golang
 func (s *Simulator) Run() error {
-	users := list.New()
+  users := list.New()
 ```
 
 We also need a way to write events to a Redpanda topic. For that we will create
@@ -219,9 +220,9 @@ JSON encoder.
 events := s.producer.TopicEncoder("events")
 ```
 
-## Creating users
+### Creating users
 
-Now, lets start working in the main loop of the `Run()` method. Each time the
+Now it's time to start working in the main loop of the `Run()` method. Each time the
 simulator ticks (once per second) we will create a random number of new users.
 
 I have already provided a variable in `s.config` called `MaxUsersPerTick` which
@@ -262,7 +263,7 @@ for s.Running() {
 }
 ```
 
-## Simulating browsing activity
+### Simulating browsing activity
 
 Now for the meat, we need to make our users browse the site! Lets add something
 like this right after we create new users:
@@ -342,7 +343,7 @@ $ ./tasks rpk topic consume --offset latest events
 ...tons of messages, ctrl-C to cancel...
 ```
 
-# 3. Define a schema and load the data using Pipelines
+## 3. Define a schema and load the data using Pipelines
 
 Next on our TODO list is getting the data into SingleStore! You can put away
 your Go skills, this step is all about writing SQL.
@@ -400,11 +401,10 @@ massages the event into the schema of the `events` table we defined above. You
 can read more about the powerful `CREATE PIPELINE` command
 [in our docs][create-pipeline].
 
-# 4. Expose business logic via an HTTP API
+## 4. Expose business logic via an HTTP API
 
 Now that we have successfully generated and loaded data into SingleStore, we can
-easily expose that data via a simple HTTP API. Open up [api.go](src/api.go) and
-lets define some interesting queries.
+easily expose that data via a simple HTTP API. Open up [api.go](src/api.go) and define some interesting queries.
 
 The first query I suggest writing is a simple leaderboard. It looks something
 like this:
@@ -467,11 +467,11 @@ $ ./tasks api
 $ ./tasks logs api
 Attaching to api
 api            | [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
-api            | 
+api            |
 api            | [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
 api            |  - using env:  export GIN_MODE=release
 api            |  - using code: gin.SetMode(gin.ReleaseMode)
-api            | 
+api            |
 api            | [GIN-debug] GET    /ping                     --> src.(*Api).Ping-fm (3 handlers)
 api            | [GIN-debug] GET    /leaderboard              --> src.(*Api).Leaderboard-fm (3 handlers)
 api            | [GIN-debug] Listening and serving HTTP on :8000
@@ -493,14 +493,14 @@ Before moving forward consider creating one or two additional endpoints or
 modifying the leaderboard. Here are some ideas:
 
 - (_easy_): change the leaderboard to accept a filter for a specific path
-  prefix; i.e. /leaderboard?prefix=/blog
+  prefix; i.e. `-/leaderboard?prefix=/blog`
 - (_medium_): add a new endpoint which returns a referrer leaderboard (you only
-  care about rows where referrer is NOT NULL)
+  care about rows where referrer is `NOT NULL`)
 - (_hard_): add a new endpoint which returns the number of page loads over time
   bucketed by minute - keep in mind that each row in the events table represents
   a user viewing a page for 1 second
 
-# 5. Visualize your data
+## 5. Visualize your data
 
 Whew! We are almost at the end of the workshop! As a final piece of the puzzle,
 lets visualize our data using Grafana. I have already setup grafana for you, so
