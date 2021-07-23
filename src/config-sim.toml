@@ -1,5 +1,6 @@
-numWorkers = 4
+numWorkers = 2
 maxUsersPerTick = 1000
+maxUsersPerThread = 10000
 
 sitemapURL = "https://www.singlestore.com/sitemap.xml"
 

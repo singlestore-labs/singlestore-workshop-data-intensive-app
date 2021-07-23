@@ -5,9 +5,10 @@ import (
 )
 
 type SimConfig struct {
-	NumWorkers      int
-	MaxUsersPerTick int
-	SitemapURL      string
+	NumWorkers        int
+	MaxUsersPerTick   int
+	MaxUsersPerThread int
+	SitemapURL        string
 
 	Producer ProducerConfig
 }

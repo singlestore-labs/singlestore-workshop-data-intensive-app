@@ -27,7 +27,7 @@ setup and ready to go.
    git clone https://github.com/singlestore-labs/singlestore-workshop-data-intensive-app.git
    ```
 
-2. This project uses docker & docker-compose
+2. Make sure you have docker & docker-compose installed on your machine
    - [docker][docker]
    - [docker-compose][docker-compose]
 
@@ -40,7 +40,7 @@ setup and ready to go.
 > ❗ **Note 2:** If you are following this tutorial on a Mac with the new M1
 > chipset, it is unlikely to work. SingleStore does not yet support running on
 > M1. We are actively fixing this, but in the meantime please follow along using
-> a Linux virtual machine.
+> a different machine.
 
 3. A code editor that you are comfortable using, if you aren't sure pick one of
    the options below:
@@ -120,8 +120,8 @@ MySQL [(none)]> select "hello world";
 1 row in set (0.001 sec)
 ```
 
-To make sure that Redpanda is receiving data lets tail a test topic and see what
-the hello simulator is saying:
+To make sure that Redpanda is receiving data use the following command to read
+from a test topic and see what the hello simulator is saying:
 
 ```bash
 $ ./tasks rpk topic consume --offset latest test
@@ -172,9 +172,44 @@ SingleStore website. Lets define it's behavior:
 
 ### Define our data structures
 
-First, we need to define an object to track our "users". I suggest doing this in
-[simulator.go](src/simulator.go), but any go file in that directory (or a new go
-file) will work fine.
+We will be working in [simulator.go](src/simulator.go) for this section of the
+workshop, so please open that file. It should look like this:
+
+```golang
+// +build active_file
+
+package src
+
+import (
+	"time"
+)
+
+func (s *Simulator) Run() error {
+	testTopic := s.producer.TopicEncoder("test")
+
+	for s.Running() {
+		time.Sleep(JitterDuration(time.Second, 200*time.Millisecond))
+
+		testTopic.Encode(map[string]interface{}{
+			"message": "hello world",
+			"time":    time.Now(),
+			"worker":  s.id,
+		})
+	}
+
+	return nil
+}
+```
+
+> **Note:** A finished version of this file is also included at
+> [simulator_finished.go](src/simulator_finished.go) in case you get stuck. You
+> can switch between which one is used by changing the comment at the top of
+> both files. Go will build the one with the comment `// +build active_file` and
+> will ignore the one with the comment `// +build !active_file`. We will use
+> this technique later on in this workshop as well.
+
+First, we need to define an object to track our "users". Modify
+[simulator.go](src/simulator.go) as you follow along.
 
 ```golang
 type User struct {
@@ -184,8 +219,9 @@ type User struct {
 }
 ```
 
-We will also need an event object which will help us write JSON to the events
-topic in Redpanda.
+We will also need an object which will help us write JSON to the events topic in
+Redpanda. Go provides a feature called `struct tags` to help configure what the
+resulting JSON object should look like.
 
 ```golang
 type Event struct {
@@ -197,24 +233,25 @@ type Event struct {
 }
 ```
 
-As you can tell from the code, most of the boilerplate has already been written
-for you. We mainly need to fill in the body of the `Simulator.Run` method. Lets
-do that now.
-
 ### Data Structures
 
-First we need a place to store our users. Lets do that at the start of the
-`Run()` method. We will use a linked list data structure since we will be adding
-and removing users often.
+Time to modify the `Run()` method which you will also find in
+[simulator.go](src/simulator.go). To start, we need a place to store our users.
+We will use a linked list data structure since we will be adding and removing
+users often.
 
 ```golang
 func (s *Simulator) Run() error {
   users := list.New()
 ```
 
-We also need a way to write events to a Redpanda topic. For that we will create
-a `TopicEncoder` which is a simple object which wraps a Kafka producer with a
-JSON encoder.
+We also need a way to write events to a Redpanda topic. I have already hooked up
+the code to Redpanda and provided a way to create what I call `TopicEncoders`. A
+TopicEncoder is a simple wrapper around a Redpanda producer which encodes each
+message using JSON.
+
+As you can see in the code, there is already a `TopicEncoder` for the `test`
+topic. Let's modify that line to instead target the events topic:
 
 ```golang
 events := s.producer.TopicEncoder("events")
@@ -222,52 +259,69 @@ events := s.producer.TopicEncoder("events")
 
 ### Creating users
 
-Now it's time to start working in the main loop of the `Run()` method. Each time
-the simulator ticks (once per second) we will create a random number of new
-users.
+The `Run()` method has a main loop which starts with the line `for s.Running()`.
+`s.Running()` will return `true` until the program starts to exit at which point
+it will return `false`.
 
-I have already provided a variable in `s.config` called `MaxUsersPerTick` which
-we can use to play with later on. For now, write some code that looks a bit like
-this:
+Within this loop the code "ticks" roughly once per second. Each time the loop
+ticks we need to run a bit of simulation code.
+
+The first thing we should do is create some users. Modify the simulation loop to
+look something like this:
 
 ```golang
 for s.Running() {
-    time.Sleep(time.Second)
+		time.Sleep(JitterDuration(time.Second, 200*time.Millisecond))
     unixNow := time.Now().Unix()
 
-    // create a random number of new users
-    numNewUsers := int(math.Max(1, float64(s.config.MaxUsersPerTick)*rand.Float64()))
-    for i := 0; i < numNewUsers; i++ {
-        // define a new user
-        user := &User{
-            UserID:      NextUserId(),
-            CurrentPage: s.sitemap.RandomLeaf(),
-            LastChange:  time.Now(),
-        }
+		// create a random number of new users
+		if users.Len() < s.config.MaxUsersPerThread {
 
-        // add the user to the list
-        users.PushBack(user)
+			// figure out the max number of users we can create
+			maxNewUsers := s.config.MaxUsersPerThread - users.Len()
 
-        // write an event to the topic
-        err := events.Encode(Event{
-            Timestamp: unixNow,
-            UserID:    user.UserID,
-            Path:      user.CurrentPage.Path,
+			// calculate a random number between 1 and maxNewUsers
+			numNewUsers := RandomIntInRange(1, maxNewUsers)
 
-            // we provide a fake referrer here
-            Referrer:  RandomReferrer(),
-        })
-        if err != nil {
-            return err
-        }
-    }
+			// create the new users
+			for i := 0; i < numNewUsers; i++ {
+				// define a new user
+				user := &User{
+					UserID:      NextUserId(),
+					CurrentPage: s.sitemap.RandomLeaf(),
+					LastChange:  time.Now(),
+				}
+
+				// add the user to the list
+				users.PushBack(user)
+
+				// write an event to the topic
+				err := events.Encode(Event{
+					Timestamp: unixNow,
+					UserID:    user.UserID,
+					Path:      user.CurrentPage.Path,
+
+					// pick a random referrer to use
+					Referrer: RandomReferrer(),
+				})
+
+				if err != nil {
+					return err
+				}
+			}
+		}
 }
 ```
 
 ### Simulating browsing activity
 
-Now for the meat, we need to make our users browse the site! Lets add something
-like this right after we create new users:
+Now that we have users, let's simulate them browsing the site. The basic idea is
+that each time the simulation loop ticks, all of the users will decide to either
+stay on the current page, leave the site, or go to another page. Once again, we
+will roll virtual dice to make this happen.
+
+Add the following code _within_ the simulation loop right after you create new
+users.
 
 ```golang
 // we will be removing elements from the list while we iterate, so we
@@ -276,7 +330,8 @@ var next *list.Element
 
 // iterate through the users list and simulate each users behavior
 for el := users.Front(); el != nil; el = next {
-    // bookkeeping
+
+    // loop bookkeeping
     next = el.Next()
     user := el.Value.(*User)
     pageTime := time.Since(user.LastChange)
@@ -288,15 +343,15 @@ for el := users.Front(); el != nil; el = next {
         // to be closer to 0 most of the time
         eventProb := math.Pow(rand.Float64(), 2)
 
-        if eventProb > 0.9 {
+        if eventProb > 0.98 {
             // user has left the site
             users.Remove(el)
             continue
-        } else if eventProb > 0.8 {
+        } else if eventProb > 0.9 {
             // user jumps to a random page
             user.CurrentPage = s.sitemap.RandomLeaf()
             user.LastChange = time.Now()
-        } else if eventProb > 0.5 {
+        } else if eventProb > 0.8 {
             // user goes to the "next" page
             user.CurrentPage = user.CurrentPage.RandomNext()
             user.LastChange = time.Now()
@@ -347,37 +402,41 @@ $ ./tasks rpk topic consume --offset latest events
 ## 3. Define a schema and load the data using Pipelines
 
 Next on our TODO list is getting the data into SingleStore! You can put away
-your Go skills, this step is all about writing SQL.
+your Go skills for a moment, this step is all about writing SQL.
 
-> ℹ️ **Note:** Everyone has a different method of iteratively working on a
-> schema, but for this workshop I recommend working inside the provided
-> [schema.sql](schema.sql) file. The first line of the file is
-> `drop database if exists app` which will **delete** the entire `app` database
-> each time you reload this file. This makes iteration very fast, but just be
-> careful not to run the file on a database full of juicy user data 😉.
+We will be using SingleStore Studio to work on our schema and then saving the
+final result in [schema.sql](schema.sql). Open http://localhost:8080 and login
+with username: `root`, password: `root`. Once you are inside Studio, click **SQL
+Editor** on the left side.
 
-So, lets start with a simple events table. Something like this should do the
+To start, we need a table for our events. Something like this should do the
 trick:
 
 ```sql
+DROP DATABASE IF EXISTS app;
+CREATE DATABASE app;
+USE app;
+
 CREATE TABLE events (
     ts DATETIME NOT NULL,
-    path TEXT NOT NULL,
-    user_id TEXT NOT NULL,
+    path TEXT NOT NULL COLLATE "utf8_bin",
+    user_id TEXT NOT NULL COLLATE "utf8_bin",
 
     referrer TEXT,
     page_time_s DOUBLE NOT NULL DEFAULT 0,
 
     SORT KEY (ts),
-    SHARD KEY (user_id),
-
-    KEY (user_id),
-    KEY (referrer)
+    SHARD KEY (user_id)
 );
 ```
 
-Next, we are going to use SingleStore Pipelines to consume the events topic we
-created earlier. This is surprisingly easy, check it out:
+At the top of the code you will see `DROP DATABASE...`. This makes it easy to
+iterate, just select-all (`ctrl/cmd-a`) and run (`ctrl/cmd-enter`) to rebuild
+the whole schema in SingleStore. Obviously, don't use this technique in
+production 😉.
+
+We will use SingleStore Pipelines to consume the events topic we created
+earlier. This is surprisingly easy, check it out:
 
 ```sql
 CREATE PIPELINE events
@@ -396,11 +455,25 @@ SET ts = FROM_UNIXTIME(@unix_timestamp);
 START PIPELINE events;
 ```
 
-The pipeline defined above connects to redpanda and starts loading the events
-topic in batches. Each event is processed by the `FORMAT JSON` clause which
-massages the event into the schema of the `events` table we defined above. You
-can read more about the powerful `CREATE PIPELINE` command
-[in our docs][create-pipeline].
+The pipeline defined above connects to Redpanda and starts loading the events
+topic in batches. Each message is processed by the `FORMAT JSON` clause which
+maps the event's fields to the columns in the `events` table. You can read more
+about the powerful `CREATE PIPELINE` command [in our docs][create-pipeline].
+
+Once `START PIPELINE` completes, SingleStore will start loading events from the
+simulator. Within a couple seconds you should start seeing rows show up in the
+events table. Try running `SELECT COUNT(*) FROM events`.
+
+If you don't see any rows check `SHOW PIPELINES` to see if your pipeline is
+running or has an error. You can also look for error messages using the query
+`SELECT * FROM INFORMATION_SCHEMA.PIPELINES_ERRORS`.
+
+> **Remember!** Once your schema works, copy the DDL statements
+> (`CREATE TABLE, CREATE PIPELINE, START PIPELINE`) into
+> [schema.sql](schema.sql) to make sure you don't loose it.
+
+You can find a finished version of [schema.sql](schema.sql) in
+[schema_finished.sql](schema_finished.sql).
 
 ## 4. Expose business logic via an HTTP API
 
@@ -418,6 +491,8 @@ GROUP BY 1
 ORDER BY 2 DESC
 LIMIT 10
 ```
+
+This query counts the number of distinct users per page and returns the top 10.
 
 We can expose the results of this query via the following function added to
 [api.go](src/api.go):
@@ -494,30 +569,30 @@ $ curl -s "localhost:8000/leaderboard?limit=2" | jq
 Before moving forward consider creating one or two additional endpoints or
 modifying the leaderboard. Here are some ideas:
 
-- (_easy_): change the leaderboard to accept a filter for a specific path
-  prefix; i.e. `/leaderboard?prefix=/blog`
-- (_medium_): add a new endpoint which returns a referrer leaderboard (you only
+- (_easy_) change the leaderboard to accept a filter for a specific path prefix;
+  i.e. `/leaderboard?prefix=/blog`
+- (_medium_) add a new endpoint which returns a referrer leaderboard (you only
   care about rows where referrer is `NOT NULL`)
-- (_hard_): add a new endpoint which returns the number of page loads over time
+- (_hard_) add a new endpoint which returns the number of page loads over time
   bucketed by minute - keep in mind that each row in the events table represents
   a user viewing a page for 1 second
 
 ## 5. Visualize your data
 
-Whew! We are almost at the end of the workshop! As a final piece of the puzzle,
-lets visualize our data using Grafana. I have already setup grafana for you, so
-just head over to http://localhost:3000 to get started. Username and password
+Whew! We are almost to the end of the workshop! As a final piece of the puzzle,
+we will visualize our data using Grafana. I have already setup grafana for you,
+so just head over to http://localhost:3000 to get started. Username and password
 are both `root`.
 
-Assuming you have ended up with a mostly working simulation, you can check out
-the dashboard I have already created here:
+Assuming your simulation and schema matches what is in this README, you can
+check out the pre-created dashboard I have already created here:
 http://localhost:3000/d/_TsB4vZ7k/user-analytics?orgId=1&refresh=5s
 
-I highly recommend playing around with Grafana and experimenting with it's many
+I highly recommend playing around with Grafana and experimenting with its many
 features. I have setup SingleStore as a datasource called "SingleStore" so it
 should be pretty easy to create new dashboards and panels.
 
-For further Grafana learning, I recommend checking out their docs
+For further Grafana education, I recommend checking out their docs
 [starting here][grafana-getting-started]. Good luck!
 
 <!-- Link index -->

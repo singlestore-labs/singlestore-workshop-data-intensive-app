@@ -13,5 +13,6 @@
             "database": "app",
             "password": "root"
         }
-    ]
+    ],
+    "go.buildTags": "active_file",
 }

@@ -168,7 +168,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select count(*) from events\nwhere\n  ts > date_sub($__timeTo(), interval 5 SECOND)",
+          "rawSql": "select count(distinct user_id) from events\nwhere\n  ts > date_sub($__timeTo(), interval 5 SECOND)",
           "refId": "A",
           "select": [
             [
@@ -238,7 +238,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT path, COUNT(distinct user_id) AS \"unique users\", max(page_time_s) as \"max time on page\"\nFROM events\nWHERE ts BETWEEN FROM_UNIXTIME(1626970859) AND FROM_UNIXTIME(1626971159)\nGROUP BY 1\nORDER BY 2 DESC, 3 DESC\nLIMIT 15;",
+          "rawSql": "SELECT path, count(distinct user_id)\nFROM events\nWHERE $__timeFilter(ts)\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10;",
           "refId": "A",
           "select": [
             [
@@ -279,5 +279,5 @@
   "timezone": "",
   "title": "User Analytics",
   "uid": "_TsB4vZ7k",
-  "version": 2
+  "version": 1
 }

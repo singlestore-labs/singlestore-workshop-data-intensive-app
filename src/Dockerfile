@@ -8,8 +8,8 @@ RUN go mod download all
 
 COPY . .
 
-RUN go build -o /simulator bin/simulator/main.go
-RUN go build -o /api bin/api/main.go
+RUN go build --tags active_file -o /simulator bin/simulator/main.go
+RUN go build --tags active_file -o /api bin/api/main.go
 
 # simulator image
 FROM debian:buster-slim as simulator

@@ -2,6 +2,7 @@ package src
 
 import (
 	"math/rand"
+	"time"
 
 	"github.com/rogpeppe/fastuuid"
 )
@@ -46,4 +47,14 @@ func RandomReferrer() string {
 
 func NextUserId() string {
 	return UUIDGen.Hex128()
+}
+
+func RandomIntInRange(min, max int) int {
+	return rand.Intn(max-min) + min
+}
+
+// JitterDuration will add or subtract a random portion of the provided jitter duration to the base duration
+// ex: JitterDuration(time.Second, 100*time.Millisecond) could return 1.04777941s or 982.153551ms
+func JitterDuration(d time.Duration, jitter time.Duration) time.Duration {
+	return (d - jitter) + time.Duration(rand.Int63n(int64(2*jitter)))
 }
