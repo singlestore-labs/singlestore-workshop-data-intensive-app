@@ -326,8 +326,8 @@ Then update imports at the top of the file
 
 ```golang
 import (
-	"container/list"
-	"time"
+  "container/list"
+  "time"
 )
 ```
 
@@ -397,10 +397,10 @@ Then update imports at the top of the file:
 
 ```golang
 import (
-	"container/list"
-	"math"
-	"math/rand"
-	"time"
+  "container/list"
+  "math"
+  "math/rand"
+  "time"
 )
 ```
 
@@ -558,10 +558,10 @@ Make sure you update the imports at the top of the file to:
 
 ```golang
 import (
-	"net/http"
-	"strconv"
+  "net/http"
+  "strconv"
 
-	"github.com/gin-gonic/gin"
+  "github.com/gin-gonic/gin"
 )
 ```
 
