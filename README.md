@@ -1,5 +1,11 @@
 # Workshop: Building data-intensive apps with SingleStore, Redpanda, and Golang
 
+> 👋 Hello! I'm @carlsverre, and I'll be helping you out today while we build a
+> data-intensive application. Since everyone tends to work at different speeds,
+> this workshop is designed to be self-guided with assistance as needed. If you
+> are taking this workshop on your own and get stuck, feel free to ask for help
+> in the [SingleStore forums][s2-forums] via a [Github Issue][gh-issue]
+
 This repo provides a starting point for building a data-intensive application
 using SingleStore, Vectorized Redpanda, and Golang. SingleStore is a scale-out
 relational database built for data-intensive workloads. Redpanda is a Kafka API
@@ -316,6 +322,10 @@ for s.Running() {
 }
 ```
 
+> ℹ️ **Note:** You can test your code as you go by running `./tasks simulator`.
+> This command will recompile the code and run the simulator. If you have any
+> errors they will show up in the output.
+
 ### Simulating browsing activity
 
 Now that we have users, let's simulate them browsing the site. The basic idea is
@@ -323,8 +333,8 @@ that each time the simulation loop ticks, all of the users will decide to either
 stay on the current page, leave the site, or go to another page. Once again, we
 will roll virtual dice to make this happen.
 
-Add the following code _within_ the simulation loop right after you create new
-users.
+Add the following code within the `for s.Running() {` loop right after the code
+you added in the last section.
 
 ```golang
 // we will be removing elements from the list while we iterate, so we
@@ -380,10 +390,6 @@ following commands:
 ```bash
 $ ./tasks simulator
 ...output of building and running the simulator...
-
-$ ./tasks logs simulator
-Attaching to simulator
-simulator      | 2021/07/22 03:52:16 starting simulation with 1 workers
 
 $ ./tasks rpk topic consume --offset latest events
 {
@@ -597,6 +603,29 @@ should be pretty easy to create new dashboards and panels.
 For further Grafana education, I recommend checking out their docs
 [starting here][grafana-getting-started]. Good luck!
 
+# Wrapping up
+
+Congrats! You have now learned the basics of building a data-intensive app with
+SingleStore! As a quick recap, during this workshop you have:
+
+- created a user simulator to generate random browsing data
+- ingested that data into SingleStore using Pipelines
+- exposed business analytics via an HTTP API
+- created dashboards to help you run your business
+
+With these skills, you have learned the foundation of building data-intensive
+applications. For example, using this exact structure I built a
+[logistics simulator][logistics-sim] which simulated global package logistics at
+massive scale. You can read more about that project on the
+[SingleStore Blog][logistics-blog].
+
+I hope you enjoyed the workshop! Please feel free to provide feedback in the
+[SingleStore forums][s2-forums] or via a [Github Issue][gh-issue].
+
+Cheers!
+
+~ @carlsverre
+
 <!-- Link index -->
 
 [docker-compose]: https://docs.docker.com/compose/install/
@@ -610,3 +639,7 @@ For further Grafana education, I recommend checking out their docs
 [singlestore-portal]: https://portal.singlestore.com/?utm_medium=osm&utm_source=github
 [create-pipeline]: https://docs.singlestore.com/db/v7.3/en/reference/sql-reference/pipelines-commands/create-pipeline.html
 [grafana-getting-started]: https://grafana.com/docs/grafana/latest/getting-started/getting-started/
+[s2-forums]: https://www.singlestore.com/forum
+[gh-issue]: https://github.com/singlestore-labs/singlestore-workshop-data-intensive-app/issues/new
+[logistics-sim]: https://github.com/singlestore-labs/singlestore-logistics-sim
+[logistics-blog]: https://www.singlestore.com/blog/scaling-worldwide-parcel-logistics-with-singlestore-and-vectorized/

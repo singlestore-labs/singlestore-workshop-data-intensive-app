@@ -60,6 +60,7 @@ storage() {
 simulator() {
     docker-compose rm -fsv simulator
     docker-compose up --build -d simulator
+    docker-compose logs --tail=10 simulator
 }
 
 stop-simulator() {
@@ -69,6 +70,7 @@ stop-simulator() {
 api() {
     docker-compose rm -fsv api
     docker-compose up --build -d api
+    docker-compose logs --tail=10 api
 }
 
 stop-api() {
