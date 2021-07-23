@@ -181,26 +181,26 @@ workshop, so please open that file. It should look like this:
 package src
 
 import (
-	"time"
+  "time"
 )
 
 func (s *Simulator) Run() error {
-	testTopic := s.producer.TopicEncoder("test")
+  testTopic := s.producer.TopicEncoder("test")
 
-	for s.Running() {
-		time.Sleep(JitterDuration(time.Second, 200*time.Millisecond))
+  for s.Running() {
+    time.Sleep(JitterDuration(time.Second, 200*time.Millisecond))
 
-		err := testTopic.Encode(map[string]interface{}{
-			"message": "hello world",
-			"time":    time.Now(),
-			"worker":  s.id,
-		})
-		if err != nil {
-			return err
-		}
-	}
+    err := testTopic.Encode(map[string]interface{}{
+      "message": "hello world",
+      "time":    time.Now(),
+      "worker":  s.id,
+    })
+    if err != nil {
+      return err
+    }
+  }
 
-	return nil
+  return nil
 }
 ```
 
@@ -274,45 +274,45 @@ look something like this:
 
 ```golang
 for s.Running() {
-		time.Sleep(JitterDuration(time.Second, 200*time.Millisecond))
-    unixNow := time.Now().Unix()
+  time.Sleep(JitterDuration(time.Second, 200*time.Millisecond))
+  unixNow := time.Now().Unix()
 
-		// create a random number of new users
-		if users.Len() < s.config.MaxUsersPerThread {
+  // create a random number of new users
+  if users.Len() < s.config.MaxUsersPerThread {
 
-			// figure out the max number of users we can create
-			maxNewUsers := s.config.MaxUsersPerThread - users.Len()
+    // figure out the max number of users we can create
+    maxNewUsers := s.config.MaxUsersPerThread - users.Len()
 
-			// calculate a random number between 1 and maxNewUsers
-			numNewUsers := RandomIntInRange(1, maxNewUsers)
+    // calculate a random number between 1 and maxNewUsers
+    numNewUsers := RandomIntInRange(1, maxNewUsers)
 
-			// create the new users
-			for i := 0; i < numNewUsers; i++ {
-				// define a new user
-				user := &User{
-					UserID:      NextUserId(),
-					CurrentPage: s.sitemap.RandomLeaf(),
-					LastChange:  time.Now(),
-				}
+    // create the new users
+    for i := 0; i < numNewUsers; i++ {
+      // define a new user
+      user := &User{
+        UserID:      NextUserId(),
+        CurrentPage: s.sitemap.RandomLeaf(),
+        LastChange:  time.Now(),
+      }
 
-				// add the user to the list
-				users.PushBack(user)
+      // add the user to the list
+      users.PushBack(user)
 
-				// write an event to the topic
-				err := events.Encode(Event{
-					Timestamp: unixNow,
-					UserID:    user.UserID,
-					Path:      user.CurrentPage.Path,
+      // write an event to the topic
+      err := events.Encode(Event{
+        Timestamp: unixNow,
+        UserID:    user.UserID,
+        Path:      user.CurrentPage.Path,
 
-					// pick a random referrer to use
-					Referrer: RandomReferrer(),
-				})
+        // pick a random referrer to use
+        Referrer: RandomReferrer(),
+      })
 
-				if err != nil {
-					return err
-				}
-			}
-		}
+      if err != nil {
+        return err
+      }
+    }
+  }
 }
 ```
 
@@ -333,45 +333,44 @@ var next *list.Element
 
 // iterate through the users list and simulate each users behavior
 for el := users.Front(); el != nil; el = next {
+  // loop bookkeeping
+  next = el.Next()
+  user := el.Value.(*User)
+  pageTime := time.Since(user.LastChange)
 
-    // loop bookkeeping
-    next = el.Next()
-    user := el.Value.(*User)
-    pageTime := time.Since(user.LastChange)
+  // users only consider leaving a page after at least 5 seconds
+  if pageTime > time.Second*5 {
 
-    // users only consider leaving a page after at least 5 seconds
-    if pageTime > time.Second*5 {
+      // eventProb is a random value from 0 to 1 but is weighted
+      // to be closer to 0 most of the time
+      eventProb := math.Pow(rand.Float64(), 2)
 
-        // eventProb is a random value from 0 to 1 but is weighted
-        // to be closer to 0 most of the time
-        eventProb := math.Pow(rand.Float64(), 2)
+      if eventProb > 0.98 {
+          // user has left the site
+          users.Remove(el)
+          continue
+      } else if eventProb > 0.9 {
+          // user jumps to a random page
+          user.CurrentPage = s.sitemap.RandomLeaf()
+          user.LastChange = time.Now()
+      } else if eventProb > 0.8 {
+          // user goes to the "next" page
+          user.CurrentPage = user.CurrentPage.RandomNext()
+          user.LastChange = time.Now()
+      }
+  }
 
-        if eventProb > 0.98 {
-            // user has left the site
-            users.Remove(el)
-            continue
-        } else if eventProb > 0.9 {
-            // user jumps to a random page
-            user.CurrentPage = s.sitemap.RandomLeaf()
-            user.LastChange = time.Now()
-        } else if eventProb > 0.8 {
-            // user goes to the "next" page
-            user.CurrentPage = user.CurrentPage.RandomNext()
-            user.LastChange = time.Now()
-        }
-    }
-
-    // write an event to the topic recording the time on the current page
-    // note that if the user has changed pages above, that fact will be reflected here
-    err := events.Encode(Event{
-        Timestamp: unixNow,
-        UserID:    user.UserID,
-        Path:      user.CurrentPage.Path,
-        PageTime:  pageTime.Seconds(),
-    })
-    if err != nil {
-        return err
-    }
+  // write an event to the topic recording the time on the current page
+  // note that if the user has changed pages above, that fact will be reflected here
+  err := events.Encode(Event{
+    Timestamp: unixNow,
+    UserID:    user.UserID,
+    Path:      user.CurrentPage.Path,
+    PageTime:  pageTime.Seconds(),
+  })
+  if err != nil {
+    return err
+  }
 }
 ```
 
@@ -502,30 +501,30 @@ We can expose the results of this query via the following function added to
 
 ```golang
 func (a *Api) Leaderboard(c *gin.Context) {
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "limit must be an int"})
-		return
-	}
+  limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+  if err != nil {
+    c.JSON(http.StatusBadRequest, gin.H{"error": "limit must be an int"})
+    return
+  }
 
-	out := []struct {
-		Path  string `json:"path"`
-		Count int    `json:"count"`
-	}{}
+  out := []struct {
+    Path  string `json:"path"`
+    Count int    `json:"count"`
+  }{}
 
-	err := a.db.SelectContext(c.Request.Context(), &out, `
-		SELECT path, COUNT(DISTINCT user_id) AS count
-		FROM events
-		GROUP BY 1
-		ORDER BY 2 DESC
-		LIMIT ?
-	`, limit)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+  err := a.db.SelectContext(c.Request.Context(), &out, `
+    SELECT path, COUNT(DISTINCT user_id) AS count
+    FROM events
+    GROUP BY 1
+    ORDER BY 2 DESC
+    LIMIT ?
+  `, limit)
+  if err != nil {
+    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+    return
+  }
 
-	c.JSON(http.StatusOK, out)
+  c.JSON(http.StatusOK, out)
 }
 ```
 
@@ -533,8 +532,8 @@ Then register the function in the `RegisterRoutes` function like so:
 
 ```golang
 func (a *Api) RegisterRoutes(r *gin.Engine) {
-	r.GET("/ping", a.Ping)
-	r.GET("/leaderboard", a.Leaderboard)
+  r.GET("/ping", a.Ping)
+  r.GET("/leaderboard", a.Leaderboard)
 }
 ```
 
