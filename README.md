@@ -518,7 +518,7 @@ func (a *Api) Leaderboard(c *gin.Context) {
     Count int    `json:"count"`
   }{}
 
-  err := a.db.SelectContext(c.Request.Context(), &out, `
+  err = a.db.SelectContext(c.Request.Context(), &out, `
     SELECT path, COUNT(DISTINCT user_id) AS count
     FROM events
     GROUP BY 1
