@@ -8,6 +8,7 @@ RUN go mod download all
 
 COPY . .
 
+RUN go fmt ./...
 RUN go build --tags active_file -o /simulator bin/simulator/main.go
 RUN go build --tags active_file -o /api bin/api/main.go
 
