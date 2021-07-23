@@ -1,4 +1,4 @@
-// +build !active_file
+// +build active_file
 
 package src
 
