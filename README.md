@@ -656,6 +656,8 @@ Assuming your simulation and schema matches what is in this README, you can
 check out the pre-created dashboard I have already created here:
 http://localhost:3000/d/_TsB4vZ7k/user-analytics?orgId=1&refresh=5s
 
+![grafana-dashboard](data/images/grafana_dashboard.png)
+
 I highly recommend playing around with Grafana and experimenting with its many
 features. I have setup SingleStore as a datasource called "SingleStore" so it
 should be pretty easy to create new dashboards and panels.
