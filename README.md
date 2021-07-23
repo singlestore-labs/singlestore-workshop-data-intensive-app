@@ -1,10 +1,11 @@
 # Workshop: Building data-intensive apps with SingleStore, Redpanda, and Golang
 
-> 👋 Hello! I'm @carlsverre, and I'll be helping you out today while we build a
-> data-intensive application. Since everyone tends to work at different speeds,
-> this workshop is designed to be self-guided with assistance as needed. If you
-> are taking this workshop on your own and get stuck, feel free to ask for help
-> in the [SingleStore forums][s2-forums] via a [Github Issue][gh-issue]
+> 👋 Hello! I'm [@carlsverre][gh-carlsverre], and I'll be helping you out today
+> while we build a data-intensive application. Since everyone tends to work at
+> different speeds, this workshop is designed to be self-guided with assistance
+> as needed. If you are taking this workshop on your own and get stuck, feel
+> free to ask for help in the [SingleStore forums][s2-forums] via a
+> [Github Issue][gh-issue]
 
 This repo provides a starting point for building applications using SingleStore,
 Redpanda (by [Vectorized][vectorized]), and the Go language. SingleStore is a
@@ -686,7 +687,14 @@ I hope you enjoyed the workshop! Please feel free to provide feedback in the
 
 Cheers!
 
-~ @carlsverre
+[@carlsverre][gh-carlsverre]
+
+# Contributors
+
+This project wouldn't be complete without saying thank you to these amazing
+contributors!
+
+- [Bailey Hayes (@ricochet)](https://github.com/ricochet)
 
 <!-- Link index -->
 
@@ -706,3 +714,4 @@ Cheers!
 [logistics-sim]: https://github.com/singlestore-labs/singlestore-logistics-sim
 [logistics-blog]: https://www.singlestore.com/blog/scaling-worldwide-parcel-logistics-with-singlestore-and-vectorized/
 [vectorized]: https://vectorized.io/
+[gh-carlsverre]: https://github.com/carlsverre
