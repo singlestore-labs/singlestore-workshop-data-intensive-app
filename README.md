@@ -6,21 +6,50 @@
 > are taking this workshop on your own and get stuck, feel free to ask for help
 > in the [SingleStore forums][s2-forums] via a [Github Issue][gh-issue]
 
-This repo provides a starting point for building a data-intensive application
-using SingleStore, Vectorized Redpanda, and Golang. SingleStore is a scale-out
-relational database built for data-intensive workloads. Redpanda is a Kafka API
-compatible streaming platform for mission-critical workloads created by the team
-at Vectorized.
+This repo provides a starting point for building applications using SingleStore,
+Redpanda (by [Vectorized][vectorized]), and the Go language. SingleStore is a
+scale-out relational database built for data-intensive workloads. Redpanda is a
+Kafka API compatible streaming platform for mission-critical workloads created
+by the team at Vectorized.
 
-The rest of this readme will walk you through building a simple data-intensive
-application starting from the code here. If you follow this workshop, you will
-accomplish the following tasks:
+When you finish this workshop, you will have built a simple data-intensive
+application. You might be wondering, what is a data-intensive application. **An
+application is data-intensive when data defines its constraints.** This can
+manifest itself in many ways:
+
+- your application runs a complex query workload against multiple systems
+- you depend on data from many sources
+- you serve complex analytics to customers
+- as your customer base grows your data increases exponentially in volume or
+  velocity
+
+Because of the inherent complexity of building a data-intensive application,
+they tend to grow out of control into sprawling systems which look something
+like this:
+
+![data-intensive-app](data/images/data-intensive-app.png)
+
+SingleStore has always been focused on simplifying the diagram above which is
+why our customer's tend to have systems that look a bit more like this:
+
+![singlestore-easy](data/images/singlestore-easy.png)
+
+By following the workshop documented in this file, you will build a
+data-intensive application. During the tutorial, you will accomplish the
+following tasks:
 
 1. Prepare your environment
 2. Write a digital-twin
 3. Define a schema and load the data using Pipelines
 4. Expose business logic via an HTTP API
 5. Visualize your data
+
+Once complete, you will have an application architecture which looks something
+like this:
+
+![workshop-result](data/images/what-are-we-building.png)
+
+Let's get started!
 
 ## 1. Prepare your environment
 
@@ -674,3 +703,4 @@ Cheers!
 [gh-issue]: https://github.com/singlestore-labs/singlestore-workshop-data-intensive-app/issues/new
 [logistics-sim]: https://github.com/singlestore-labs/singlestore-logistics-sim
 [logistics-blog]: https://www.singlestore.com/blog/scaling-worldwide-parcel-logistics-with-singlestore-and-vectorized/
+[vectorized]: https://vectorized.io/
