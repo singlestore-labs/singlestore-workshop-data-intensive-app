@@ -63,7 +63,7 @@ setup and ready to go.
    variable.
 
    ```bash
-   export SINGLESTORE_LICENSE="<<singlestore license>>"
+   export SINGLESTORE_LICENSE="singlestore license"
    ```
 
 ### Test that your environment is working
