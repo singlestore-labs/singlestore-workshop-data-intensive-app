@@ -10,6 +10,28 @@
 # Enable shell strict mode
 set -euo pipefail
 
+# source environment variables from local env file if it exists
+ENV_FILE=".env"
+if [[ -f "${ENV_FILE}" ]]; then
+    source "${ENV_FILE}"
+fi
+
+SINGLESTORE_LICENSE="${SINGLESTORE_LICENSE:-}"
+
+# prompt the user for license key if it's not provided in a environment variable
+if [[ -z "${SINGLESTORE_LICENSE}" ]]; then
+    # prompt the user until they enter a valid license key
+    while [[ -z "${SINGLESTORE_LICENSE}" ]]; do
+        echo "SINGLESTORE_LICENSE environment variable not found"
+        echo "You can get a free SingleStore license key from https://portal.singlestore.com/"
+        echo "Please enter your SingleStore license key:"
+        read SINGLESTORE_LICENSE
+    done
+
+    # save the license key to the environment file for future use
+    echo "export SINGLESTORE_LICENSE='${SINGLESTORE_LICENSE}'" >>"${ENV_FILE}"
+fi
+
 help() {
     cat <<EOF
 Usage: ./tasks <task> [<args>]

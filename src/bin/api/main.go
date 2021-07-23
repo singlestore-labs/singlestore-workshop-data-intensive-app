@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"src"
 
@@ -29,9 +30,16 @@ func main() {
 	}
 
 	// connect to SingleStore
-	db, err := src.NewSingleStore(config.SingleStore)
-	if err != nil {
-		log.Fatal(err)
+	var db *src.SingleStore
+	var err error
+	for {
+		db, err = src.NewSingleStore(config.SingleStore)
+		if err != nil {
+			log.Printf("unable to connect to SingleStore: %s; retrying...", err)
+			time.Sleep(time.Second)
+			continue
+		}
+		break
 	}
 
 	// we will use gin as our http server and router
