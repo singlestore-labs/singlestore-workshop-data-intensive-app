@@ -290,7 +290,7 @@ for s.Running() {
     maxNewUsers := s.config.MaxUsersPerThread - users.Len()
 
     // calculate a random number between 1 and maxNewUsers
-    numNewUsers := RandomIntInRange(1, maxNewUsers)
+    numNewUsers := RandomIntInRange(0, maxNewUsers)
 
     // create the new users
     for i := 0; i < numNewUsers; i++ {
@@ -320,6 +320,15 @@ for s.Running() {
     }
   }
 }
+```
+
+Then update imports at the top of the file
+
+```golang
+import (
+	"container/list"
+	"time"
+)
 ```
 
 > ℹ️ **Note:** You can test your code as you go by running `./tasks simulator`.
@@ -382,6 +391,17 @@ for el := users.Front(); el != nil; el = next {
     return err
   }
 }
+```
+
+Then update imports at the top of the file:
+
+```golang
+import (
+	"container/list"
+	"math"
+	"math/rand"
+	"time"
+)
 ```
 
 Sweet! You have built your first digital twin! You can test it by running the
@@ -532,6 +552,17 @@ func (a *Api) Leaderboard(c *gin.Context) {
 
   c.JSON(http.StatusOK, out)
 }
+```
+
+Make sure you update the imports at the top of the file to:
+
+```golang
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
 ```
 
 Then register the function in the `RegisterRoutes` function like so:
