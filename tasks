@@ -45,6 +45,8 @@ tasks:
     storage:                (re)start singlestore and redpanda
     simulator:              (re)start simulator
     stop-simulator:         stop simulator
+    api:                    (re)start api
+    stop-api:               stop api
 EOF
 }
 
