@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 #####################################################################
-# This file contains several functions that represent tasks
 #
 # Run ./tasks help for a list of available tasks
 #
@@ -46,7 +45,6 @@ tasks:
     storage:                (re)start singlestore and redpanda
     simulator:              (re)start simulator
     stop-simulator:         stop simulator
-    data:                   download data required for the workshop
 EOF
 }
 
@@ -110,14 +108,6 @@ up() {
     simulator
     api
     status
-}
-
-data() {
-    mkdir -p data/tripdata
-    pushd data/tripdata >/dev/null
-    wget -N "https://nyc-tlc.s3.amazonaws.com/trip+data/fhv_tripdata_2019-12.csv"
-    wget -N "https://nyc-tlc.s3.amazonaws.com/misc/taxi+_zone_lookup.csv"
-    popd >/dev/null
 }
 
 type ${1:-help} >/dev/null 2>&1 || {
