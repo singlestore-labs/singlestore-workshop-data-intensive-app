@@ -1,5 +1,7 @@
 # Workshop: Building data-intensive apps with SingleStore, Redpanda, and Golang
 
+**Attention**: The code in this repository is intended for experimental use only and is not fully tested, documented, or supported by SingleStore. Visit the [SingleStore Forums](https://www.singlestore.com/forum/) to ask questions about this repository.
+
 > 👋 Hello! I'm [@carlsverre][gh-carlsverre], and I'll be helping you out today
 > while we build a data-intensive application. Since everyone tends to work at
 > different speeds, this workshop is designed to be self-guided with assistance
